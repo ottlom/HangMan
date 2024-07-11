@@ -1,4 +1,4 @@
-package Model;
+package model;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,11 +25,23 @@ public class Player {
                 '}';
     }
 
-    public void winIncrement() {
-        this.winCounter++;
+    public int getId() {
+        return id;
     }
 
-    public void loseIncrement() {
-        this.loseCounter++;
+    public void setWinCounter(int winCounter) {
+        this.winCounter = winCounter;
+    }
+
+    public int getWinCounter() {
+        return winCounter;
+    }
+
+    public void setLoseCounter(int loseCounter) {
+        this.loseCounter = loseCounter;
+    }
+
+    public int getLoseCounter() {
+        return loseCounter;
     }
 }
