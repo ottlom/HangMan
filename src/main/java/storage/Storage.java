@@ -5,13 +5,13 @@ import model.Player;
 import java.util.List;
 
 public interface Storage {
-    void save(Player player);
+    Player save(Player player);
 
-    void update(Player player);
+    Player update(Player player);
 
-    void delete(int id);
+    void delete(String nickName);
 
-    void get(int id);
+    Player get(String nickName);
 
     List<Player> getAll();
 }

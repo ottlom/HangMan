@@ -25,6 +25,10 @@ public class Player {
                 '}';
     }
 
+    public String getNickName() {
+        return nickName;
+    }
+
     public int getId() {
         return id;
     }
