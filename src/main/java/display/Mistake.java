@@ -1,6 +1,7 @@
 package display;
 
 public enum Mistake {
+    CLEAR(0,(char) 45),
     HEAD(30, (char) 111),
     BODY(44, (char) 124),
     LEFT_HAND(43, (char) 47),

@@ -1,18 +1,24 @@
 package gamecontrole;
 
-import display.Mistake;
-import model.Player;
+import display.Display;
 import storage.InMemoryPlayerStorage;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
+
+import static display.Display.hangManDisplay;
+import static display.Display.hideWord;
+import static util.PlayerUtil.getPlayer;
 
 public class GameController {
-    static Mistake mistake;
     static int mistakeCounter = 0;
     private static final int MISTAKES_LIMIT = 6;
-    private final static InMemoryPlayerStorage storage = InMemoryPlayerStorage.getStorage();
+    private static StringBuilder staticWord;
+    private static StringBuilder dynamicWord;
+
 
     public static void main(String[] args) {
         System.out.println("Привет сыграем? ответь yes если хочешь начать игру, либо stop если хочешь остановить игру");
@@ -34,58 +40,51 @@ public class GameController {
             System.out.println("answer player error");
         }
 
-        Player player = getPlayer(reader);
+        getPlayer(reader);
 
-        System.out.println("так какое бы слово загадать дай ка подумать");
+        staticWord = getRandomWord();
+        dynamicWord = staticWord;
+        dynamicWord = hideWord(dynamicWord);
+        System.out.println(dynamicWord);
+        predictionCycle(dynamicWord.toString());
     }
 
-    private static void display(int mistakeNumber) {
-        switch (mistakeNumber) {
-            case 1:
-                mistake = Mistake.HEAD;
-                mistake.doDisplay(Mistake.HEAD);
-                break;
-            case 2:
-                mistake = Mistake.BODY;
-                mistake.doDisplay(Mistake.BODY);
-                break;
-            case 3:
-                mistake = Mistake.LEFT_HAND;
-                mistake.doDisplay(Mistake.LEFT_HAND);
-                break;
-            case 4:
-                mistake = Mistake.RIGHT_HAND;
-                mistake.doDisplay(Mistake.RIGHT_HAND);
-                break;
-            case 5:
-                mistake = Mistake.LEFT_FOOT;
-                mistake.doDisplay(Mistake.LEFT_FOOT);
-                break;
-            case 6:
-                mistake = Mistake.RIGHT_FOOT;
-                mistake.doDisplay(Mistake.RIGHT_FOOT);
-                break;
-        }
-    }
-
-    private static Player getPlayer(BufferedReader reader) {
-        Player player;
-        String nickName = null;
-
+    private static StringBuilder getRandomWord() {
+        List<String> array = new ArrayList<>();
+        File file = new File("C:\\Java\\projects\\HangMan\\src\\main\\resources\\dictionary.txt");
         try {
-            nickName = reader.readLine();
-        } catch (IOException e) {
-            System.out.println("ошибка ввода имени");
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNext()) {
+                array.add(scanner.next());
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
+        Random random = new Random();
+        return new StringBuilder(array.get(random.nextInt(array.size())));
+    }
 
-        if (storage.get(nickName) == null) {
-            System.out.println("гляжу ты тут новенький");
-            player = new Player(nickName);
-            storage.save(player);
-        } else {
-            System.out.println("да я помню тебя");
-            player = storage.get(nickName);
+    private static void predictionCycle(String word) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        while (!dynamicWord.toString().equals(word) | mistakeCounter < MISTAKES_LIMIT) {
+            try {
+                Display.openSymbol(reader.readLine().charAt(0), staticWord, dynamicWord);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            if (word.equals(dynamicWord.toString())) {
+                mistakeCounter++;
+                hangManDisplay(mistakeCounter);
+            } else {
+                hangManDisplay(mistakeCounter);
+                word = String.valueOf(dynamicWord);
+            }
+
+            if (mistakeCounter == MISTAKES_LIMIT) {
+                System.out.println("игра окончена");
+                break;
+            }
+            System.out.println("\n" + dynamicWord);
         }
-        return player;
     }
 }
