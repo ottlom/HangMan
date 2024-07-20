@@ -35,6 +35,7 @@ public class Display {
     }
 
     public static StringBuilder hideWord(StringBuilder wordSource) {
+        System.out.println(wordSource.toString().replaceAll("\\p{L}", "*"));
         return new StringBuilder(wordSource.toString().replaceAll("\\p{L}", "*"));
     }
 

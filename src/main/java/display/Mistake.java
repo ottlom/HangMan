@@ -1,7 +1,7 @@
 package display;
 
 public enum Mistake {
-    CLEAR(0,(char) 45),
+    CLEAR(0, (char) 45),
     HEAD(30, (char) 111),
     BODY(44, (char) 124),
     LEFT_HAND(43, (char) 47),
@@ -25,7 +25,13 @@ public enum Mistake {
         this.mistake = c;
     }
 
-    public static final StringBuilder initialState = new StringBuilder(
+    private static final String initialState = "-------------\n" +
+            "  |         |\n" +
+            "            |\n" +
+            "            |\n" +
+            "            |\n" +
+            "           / \\";
+    public static final StringBuilder gameState = new StringBuilder(
             "-------------\n" +
                     "  |         |\n" +
                     "            |\n" +
@@ -34,7 +40,12 @@ public enum Mistake {
                     "           / \\");
 
     public void doDisplay(Mistake mistake) {
-        initialState.replace(mistake.getPlace(), mistake.getPlace() + 1, String.valueOf(mistake.getMistake()));
-        System.out.println(initialState);
+        gameState.replace(mistake.getPlace(), mistake.getPlace() + 1, String.valueOf(mistake.getMistake()));
+        System.out.println(gameState);
+    }
+
+    public static void clearState() {
+        gameState.setLength(0);
+        gameState.append(initialState);
     }
 }

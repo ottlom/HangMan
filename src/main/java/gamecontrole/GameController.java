@@ -1,7 +1,8 @@
 package gamecontrole;
 
 import display.Display;
-import storage.InMemoryPlayerStorage;
+import display.Mistake;
+import model.Player;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -12,22 +13,27 @@ import java.util.Scanner;
 import static display.Display.hangManDisplay;
 import static display.Display.hideWord;
 import static util.PlayerUtil.getPlayer;
+import static util.PlayerUtil.statisticSum;
+
 
 public class GameController {
+    static Player player;
     static int mistakeCounter = 0;
     private static final int MISTAKES_LIMIT = 6;
     private static StringBuilder staticWord;
     private static StringBuilder dynamicWord;
 
-
     public static void main(String[] args) {
-        System.out.println("Привет сыграем? ответь yes если хочешь начать игру, либо stop если хочешь остановить игру");
+        gameCycle();
+    }
+
+    private static void gameCycle() {
+        System.out.println("Привет сыграем? введите yes если хочешь начать игру, либо stop если хочешь остановить игру");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         try {
             String answer = reader.readLine();
             while (!answer.equals("yes") || !answer.equals("stop")) {
                 if (answer.equals("yes")) {
-                    System.out.println("чтож представься и начнём");
                     break;
                 } else if (answer.equals("stop")) {
                     System.exit(0);
@@ -40,13 +46,23 @@ public class GameController {
             System.out.println("answer player error");
         }
 
-        getPlayer(reader);
+        while (true) {
+            try {
+                player = getPlayer(reader);
+                staticWord = getRandomWord();
+                dynamicWord = staticWord;
+                dynamicWord = hideWord(dynamicWord);
+                boolean result = CycleGuessWord(dynamicWord.toString());
+                statisticSum(player, result);
 
-        staticWord = getRandomWord();
-        dynamicWord = staticWord;
-        dynamicWord = hideWord(dynamicWord);
-        System.out.println(dynamicWord);
-        predictionCycle(dynamicWord.toString());
+                System.out.println("игра окончена хотите сыграть ещё? если да введите yes либо нажмите enter");
+                if (!reader.readLine().equals("yes")) {
+                    break;
+                }
+            } catch (IOException e) {
+                System.out.println("answer player error");
+            }
+        }
     }
 
     private static StringBuilder getRandomWord() {
@@ -64,14 +80,22 @@ public class GameController {
         return new StringBuilder(array.get(random.nextInt(array.size())));
     }
 
-    private static void predictionCycle(String word) {
+    private static boolean CycleGuessWord(String word) {
+        boolean result = false;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         while (!dynamicWord.toString().equals(word) | mistakeCounter < MISTAKES_LIMIT) {
+            System.out.println("введите букву русского алфавита");
             try {
-                Display.openSymbol(reader.readLine().charAt(0), staticWord, dynamicWord);
+                String playerAnswer = reader.readLine();
+                while (playerAnswer.equals("")) {
+                    System.out.println("вы должны ввести букву русского алфавита а не пустую строку");
+                    playerAnswer = reader.readLine();
+                }
+                Display.openSymbol(playerAnswer.charAt(0), staticWord, dynamicWord);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
             if (word.equals(dynamicWord.toString())) {
                 mistakeCounter++;
                 hangManDisplay(mistakeCounter);
@@ -79,12 +103,17 @@ public class GameController {
                 hangManDisplay(mistakeCounter);
                 word = String.valueOf(dynamicWord);
             }
-
-            if (mistakeCounter == MISTAKES_LIMIT) {
-                System.out.println("игра окончена");
-                break;
-            }
             System.out.println("\n" + dynamicWord);
         }
+
+        if (mistakeCounter == MISTAKES_LIMIT) {
+            System.out.println("вы проиграли,слово которое было загаданно - " + staticWord);
+        } else if (dynamicWord.toString().equals(staticWord.toString())) {
+            System.out.println("вы выиграли");
+            result = true;
+        }
+        mistakeCounter = 0;
+        Mistake.clearState();
+        return result;
     }
 }

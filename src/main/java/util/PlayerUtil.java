@@ -7,18 +7,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 public class PlayerUtil {
-    static InMemoryPlayerStorage storage;
+    static InMemoryPlayerStorage storage = InMemoryPlayerStorage.getStorage();
 
-    public void statisticSum(Player player, boolean gameResult) {
+    public static void statisticSum(Player player, boolean gameResult) {
         if (gameResult) {
-            System.out.println(player.getWinCounter() + " win before");
             player.setWinCounter(player.getWinCounter() + 1);
-            System.out.println(player.getWinCounter() + " win after");
         } else {
-            System.out.println(player.getLoseCounter() + " lose before");
             player.setLoseCounter(player.getLoseCounter() + 1);
-            System.out.println(player.getLoseCounter() + " lose after");
         }
+        player.viewStatistic();
     }
 
     public static Player getPlayer(BufferedReader reader) {
@@ -26,6 +23,7 @@ public class PlayerUtil {
         String nickName = null;
 
         try {
+            System.out.println("введите имя");
             nickName = reader.readLine();
         } catch (IOException e) {
             System.out.println("ошибка ввода имени");

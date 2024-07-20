@@ -29,10 +29,6 @@ public class Player {
         return nickName;
     }
 
-    public int getId() {
-        return id;
-    }
-
     public void setWinCounter(int winCounter) {
         this.winCounter = winCounter;
     }
@@ -47,5 +43,11 @@ public class Player {
 
     public int getLoseCounter() {
         return loseCounter;
+    }
+
+    public void viewStatistic() {
+        System.out.println("статистика игрока " + getNickName() +
+                ": побед - " + getWinCounter() +
+                ", поражений - " + getLoseCounter());
     }
 }
