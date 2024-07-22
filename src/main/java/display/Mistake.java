@@ -31,6 +31,7 @@ public enum Mistake {
             "            |\n" +
             "            |\n" +
             "           / \\";
+
     public static final StringBuilder gameState = new StringBuilder(
             "-------------\n" +
                     "  |         |\n" +

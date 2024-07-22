@@ -1,6 +1,5 @@
 package gamecontrole;
 
-import display.Display;
 import display.Mistake;
 import model.Player;
 
@@ -10,11 +9,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-import static display.Display.hangManDisplay;
-import static display.Display.hideWord;
-import static util.PlayerUtil.getPlayer;
-import static util.PlayerUtil.statisticSum;
-
+import static display.Display.*;
+import static util.PlayerUtil.*;
 
 public class GameController {
     static Player player;
@@ -23,11 +19,30 @@ public class GameController {
     private static StringBuilder staticWord;
     private static StringBuilder dynamicWord;
 
-    public static void main(String[] args) {
-        gameCycle();
+    public static void gameCycle() {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        while (true) {
+            try {
+                player = getPlayer(reader);
+                staticWord = getRandomWord();
+                //не забыть убрать открывание ответа
+                System.out.println(staticWord);
+                //
+                dynamicWord = hideWord(staticWord);
+                boolean result = CycleGuessWord(dynamicWord.toString());
+                statisticSum(player, result);
+
+                System.out.println("игра окончена хотите сыграть ещё? если да введите yes либо нажмите enter");
+                if (!reader.readLine().equals("yes")) {
+                    break;
+                }
+            } catch (IOException e) {
+                System.out.println("answer player error");
+            }
+        }
     }
 
-    private static void gameCycle() {
+    public static void greet() {
         System.out.println("Привет сыграем? введите yes если хочешь начать игру, либо stop если хочешь остановить игру");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         try {
@@ -45,24 +60,40 @@ public class GameController {
         } catch (IOException e) {
             System.out.println("answer player error");
         }
+    }
 
-        while (true) {
+    private static boolean CycleGuessWord(String word) {
+        boolean result = false;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        while (!dynamicWord.toString().equals(staticWord.toString()) || mistakeCounter < MISTAKES_LIMIT) {
+            System.out.println("введите букву русского алфавита");
             try {
-                player = getPlayer(reader);
-                staticWord = getRandomWord();
-                dynamicWord = staticWord;
-                dynamicWord = hideWord(dynamicWord);
-                boolean result = CycleGuessWord(dynamicWord.toString());
-                statisticSum(player, result);
+                String playerAnswer = reader.readLine();
+                while (playerAnswer.equals("")) {
+                    System.out.println("вы должны ввести букву русского алфавита а не пустую строку");
+                    playerAnswer = reader.readLine();
+                }
+                openSymbol(playerAnswer.charAt(0), staticWord, dynamicWord);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-                System.out.println("игра окончена хотите сыграть ещё? если да введите yes либо нажмите enter");
-                if (!reader.readLine().equals("yes")) {
+            if (word.equals(dynamicWord.toString())) {
+                mistakeCounter++;
+                hangManDisplay(mistakeCounter);
+            } else {
+                hangManDisplay(mistakeCounter);
+                word = String.valueOf(dynamicWord);
+                if (infoAboutStateOfGame(mistakeCounter)) {
+                    result = true;
                     break;
                 }
-            } catch (IOException e) {
-                System.out.println("answer player error");
             }
         }
+
+        mistakeCounter = 0;
+        Mistake.clearState();
+        return result;
     }
 
     private static StringBuilder getRandomWord() {
@@ -80,40 +111,17 @@ public class GameController {
         return new StringBuilder(array.get(random.nextInt(array.size())));
     }
 
-    private static boolean CycleGuessWord(String word) {
+    private static boolean infoAboutStateOfGame(int mistake) {
         boolean result = false;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        while (!dynamicWord.toString().equals(word) | mistakeCounter < MISTAKES_LIMIT) {
-            System.out.println("введите букву русского алфавита");
-            try {
-                String playerAnswer = reader.readLine();
-                while (playerAnswer.equals("")) {
-                    System.out.println("вы должны ввести букву русского алфавита а не пустую строку");
-                    playerAnswer = reader.readLine();
-                }
-                Display.openSymbol(playerAnswer.charAt(0), staticWord, dynamicWord);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            if (word.equals(dynamicWord.toString())) {
-                mistakeCounter++;
-                hangManDisplay(mistakeCounter);
-            } else {
-                hangManDisplay(mistakeCounter);
-                word = String.valueOf(dynamicWord);
-            }
-            System.out.println("\n" + dynamicWord);
-        }
-
-        if (mistakeCounter == MISTAKES_LIMIT) {
-            System.out.println("вы проиграли,слово которое было загаданно - " + staticWord);
-        } else if (dynamicWord.toString().equals(staticWord.toString())) {
+        if (dynamicWord.toString().equals(staticWord.toString())) {
             System.out.println("вы выиграли");
             result = true;
+        } else if (mistake == MISTAKES_LIMIT) {
+            System.out.println("вы проиграли,слово которое было загаданно - " + staticWord);
+        } else if (mistake < MISTAKES_LIMIT) {
+            System.out.println("совершенно ошибок: " + mistake + ", 6-я ошибка приведёт к проигрышу");
+            System.out.println(dynamicWord);
         }
-        mistakeCounter = 0;
-        Mistake.clearState();
         return result;
     }
 }

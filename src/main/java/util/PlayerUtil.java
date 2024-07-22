@@ -5,6 +5,7 @@ import storage.InMemoryPlayerStorage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Objects;
 
 public class PlayerUtil {
     static InMemoryPlayerStorage storage = InMemoryPlayerStorage.getStorage();
@@ -22,19 +23,21 @@ public class PlayerUtil {
         Player player;
         String nickName = null;
 
-        try {
-            System.out.println("введите имя");
-            nickName = reader.readLine();
-        } catch (IOException e) {
-            System.out.println("ошибка ввода имени");
-        }
+        do {
+            try {
+                System.out.println("введите имя");
+                nickName = reader.readLine();
+            } catch (IOException e) {
+                System.out.println("ошибка ввода имени");
+            }
+        } while (Objects.requireNonNull(nickName).equals(""));
 
         if (storage.get(nickName) == null) {
             System.out.println("гляжу ты тут новенький. Так какое бы слово загадать дай-ка подумать");
             player = new Player(nickName);
             storage.save(player);
         } else {
-            System.out.println("да я помню тебя. Так какое бы слово загадать дай-ка подумать");
+            System.out.println("я помню тебя. Так какое бы слово загадать дай-ка подумать");
             player = storage.get(nickName);
         }
         return player;
