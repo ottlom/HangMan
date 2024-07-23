@@ -19,15 +19,12 @@ public class GameController {
     private static StringBuilder staticWord;
     private static StringBuilder dynamicWord;
 
-    public static void gameCycle() {
+    public void gameCycle() {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
             try {
                 player = getPlayer(reader);
                 staticWord = getRandomWord();
-                //не забыть убрать открывание ответа
-                System.out.println(staticWord);
-                //
                 dynamicWord = hideWord(staticWord);
                 boolean result = CycleGuessWord(dynamicWord.toString());
                 statisticSum(player, result);
@@ -42,7 +39,7 @@ public class GameController {
         }
     }
 
-    public static void greet() {
+    public void greet() {
         System.out.println("Привет сыграем? введите yes если хочешь начать игру, либо stop если хочешь остановить игру");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         try {
@@ -62,10 +59,12 @@ public class GameController {
         }
     }
 
-    private static boolean CycleGuessWord(String word) {
+    private String compareWord;
+    private boolean CycleGuessWord(String word) {
         boolean result = false;
+        compareWord = word;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        while (!dynamicWord.toString().equals(staticWord.toString()) || mistakeCounter < MISTAKES_LIMIT) {
+        while (mistakeCounter < MISTAKES_LIMIT) {
             System.out.println("введите букву русского алфавита");
             try {
                 String playerAnswer = reader.readLine();
@@ -78,27 +77,35 @@ public class GameController {
                 throw new RuntimeException(e);
             }
 
-            if (word.equals(dynamicWord.toString())) {
-                mistakeCounter++;
-                hangManDisplay(mistakeCounter);
-            } else {
-                hangManDisplay(mistakeCounter);
-                word = String.valueOf(dynamicWord);
-                if (infoAboutStateOfGame(mistakeCounter)) {
-                    result = true;
-                    break;
-                }
+            result = isChangeWord(compareWord);
+            if (result) {
+                break;
             }
         }
-
         mistakeCounter = 0;
         Mistake.clearState();
         return result;
     }
 
-    private static StringBuilder getRandomWord() {
+    private boolean isChangeWord(String word) {
+        boolean isChange = false;
+        if (word.equals(dynamicWord.toString())) {
+            mistakeCounter++;
+            hangManDisplay(mistakeCounter);
+            infoAboutStateOfGame(mistakeCounter);
+        } else {
+            hangManDisplay(mistakeCounter);
+            compareWord = String.valueOf(dynamicWord);
+            if (infoAboutStateOfGame(mistakeCounter)) {
+                isChange = true;
+            }
+        }
+        return isChange;
+    }
+
+    private StringBuilder getRandomWord() {
         List<String> array = new ArrayList<>();
-        File file = new File("C:\\Java\\projects\\HangMan\\src\\main\\resources\\dictionary.txt");
+        File file = new File("src\\main\\resources\\dictionary.txt");
         try {
             Scanner scanner = new Scanner(file);
             while (scanner.hasNext()) {
@@ -111,7 +118,7 @@ public class GameController {
         return new StringBuilder(array.get(random.nextInt(array.size())));
     }
 
-    private static boolean infoAboutStateOfGame(int mistake) {
+    private boolean infoAboutStateOfGame(int mistake) {
         boolean result = false;
         if (dynamicWord.toString().equals(staticWord.toString())) {
             System.out.println("вы выиграли");
