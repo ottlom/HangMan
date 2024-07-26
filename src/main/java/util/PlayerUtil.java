@@ -2,13 +2,14 @@ package util;
 
 import model.Player;
 import storage.InMemoryPlayerStorage;
+import storage.Storage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Objects;
 
 public class PlayerUtil {
-    static InMemoryPlayerStorage storage = InMemoryPlayerStorage.getStorage();
+    static Storage storage = InMemoryPlayerStorage.getStorage();
 
     public static void statisticSum(Player player, boolean gameResult) {
         if (gameResult) {
