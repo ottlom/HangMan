@@ -2,31 +2,29 @@ package gamecontrole;
 
 import display.Mistake;
 import model.Player;
+import util.RandomUtil;
+import util.ValidationUtil;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
 
 import static display.Display.*;
 import static util.PlayerUtil.*;
 
 public class GameController {
-    static Player player;
-    static int mistakeCounter = 0;
-    private static final int MISTAKES_LIMIT = 6;
-    private static StringBuilder staticWord;
-    private static StringBuilder dynamicWord;
+    private int mistakeCounter = 0;
+    private final int MISTAKES_LIMIT = 6;
+    private StringBuilder immutableWord;
+    private StringBuilder dynamicMutableWord;
+    private final RandomUtil randomUtil = new RandomUtil();
+    private final ValidationUtil util = new ValidationUtil();
 
     public void gameCycle() {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
-            try {
-                player = getPlayer(reader);
-                staticWord = getRandomWord();
-                dynamicWord = hideWord(staticWord);
-                boolean result = CycleGuessWord(dynamicWord.toString());
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+                Player player = getPlayer(reader);
+                immutableWord = randomUtil.getRandomWord();
+                dynamicMutableWord = hideWord(immutableWord);
+                boolean result = CycleGuessWord(dynamicMutableWord.toString());
                 statisticSum(player, result);
 
                 System.out.println("игра окончена хотите сыграть ещё? если да введите yes либо нажмите enter");
@@ -39,7 +37,7 @@ public class GameController {
         }
     }
 
-    public void greet() {
+    public void greeting() {
         System.out.println("Привет сыграем? введите yes если хочешь начать игру, либо stop если хочешь остановить игру");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         try {
@@ -59,25 +57,26 @@ public class GameController {
         }
     }
 
-    private String compareWord;
-    private boolean CycleGuessWord(String word) {
+    private String copyDynamicWordForCompare;
+
+    private boolean CycleGuessWord(String hiddenWord) {
         boolean result = false;
-        compareWord = word;
+        copyDynamicWordForCompare = hiddenWord;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         while (mistakeCounter < MISTAKES_LIMIT) {
             System.out.println("введите букву русского алфавита");
             try {
-                String playerAnswer = reader.readLine();
-                while (playerAnswer.equals("")) {
-                    System.out.println("вы должны ввести букву русского алфавита а не пустую строку");
-                    playerAnswer = reader.readLine();
-                }
-                openSymbol(playerAnswer.charAt(0), staticWord, dynamicWord);
+                String playerAnswer;
+                do {
+                    playerAnswer = reader.readLine().toLowerCase();
+                } while (!util.isEmpty(playerAnswer) || !util.isDataValid(playerAnswer) | !util.isSameCharacter(playerAnswer.charAt(0), dynamicMutableWord.toString()));
+
+                openSymbol(playerAnswer.charAt(0), immutableWord, dynamicMutableWord);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
-            result = isChangeWord(compareWord);
+            result = isChangeWord(copyDynamicWordForCompare);
             if (result) {
                 break;
             }
@@ -87,15 +86,15 @@ public class GameController {
         return result;
     }
 
-    private boolean isChangeWord(String word) {
+    private boolean isChangeWord(String copyWord) {
         boolean isChange = false;
-        if (word.equals(dynamicWord.toString())) {
+        if (copyWord.equals(dynamicMutableWord.toString())) {
             mistakeCounter++;
             hangManDisplay(mistakeCounter);
             infoAboutStateOfGame(mistakeCounter);
         } else {
             hangManDisplay(mistakeCounter);
-            compareWord = String.valueOf(dynamicWord);
+            copyDynamicWordForCompare = String.valueOf(dynamicMutableWord);
             if (infoAboutStateOfGame(mistakeCounter)) {
                 isChange = true;
             }
@@ -103,31 +102,16 @@ public class GameController {
         return isChange;
     }
 
-    private StringBuilder getRandomWord() {
-        List<String> array = new ArrayList<>();
-        File file = new File("src\\main\\resources\\dictionary.txt");
-        try {
-            Scanner scanner = new Scanner(file);
-            while (scanner.hasNext()) {
-                array.add(scanner.next());
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        Random random = new Random();
-        return new StringBuilder(array.get(random.nextInt(array.size())));
-    }
-
     private boolean infoAboutStateOfGame(int mistake) {
         boolean result = false;
-        if (dynamicWord.toString().equals(staticWord.toString())) {
+        if (dynamicMutableWord.toString().equals(immutableWord.toString())) {
             System.out.println("вы выиграли");
             result = true;
         } else if (mistake == MISTAKES_LIMIT) {
-            System.out.println("вы проиграли,слово которое было загаданно - " + staticWord);
+            System.out.println("вы проиграли,слово которое было загаданно - " + immutableWord);
         } else if (mistake < MISTAKES_LIMIT) {
             System.out.println("совершенно ошибок: " + mistake + ", 6-я ошибка приведёт к проигрышу");
-            System.out.println(dynamicWord);
+            System.out.println(dynamicMutableWord);
         }
         return result;
     }

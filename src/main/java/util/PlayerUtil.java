@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class PlayerUtil {
-    static InMemoryPlayerStorage storage = InMemoryPlayerStorage.getStorage();
+    private final static InMemoryPlayerStorage storage = InMemoryPlayerStorage.getStorage();
 
     public static void statisticSum(Player player, boolean gameResult) {
         if (gameResult) {

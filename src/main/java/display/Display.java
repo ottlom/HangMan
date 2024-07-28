@@ -39,10 +39,10 @@ public class Display {
         return new StringBuilder(wordSource.toString().replaceAll("\\p{L}", "*"));
     }
 
-    public static void openSymbol(char playerAnswer, StringBuilder sourceWord, StringBuilder dynamicWord) {
+    public static void openSymbol(char guess, StringBuilder hiddenWord, StringBuilder dynamicWord) {
         for (int i = 0; i < dynamicWord.length(); i++) {
-            if (sourceWord.charAt(i) == playerAnswer) {
-                dynamicWord.setCharAt(i, playerAnswer);
+            if (hiddenWord.charAt(i) == guess) {
+                dynamicWord.setCharAt(i, guess);
             }
         }
     }
